@@ -1,0 +1,8 @@
+{
+  "name": "Remix Rueda de Liderazgo — Cuartilla Ejecutiva",
+  "description": "Herramienta ejecutiva para análisis visual de la Rueda de Liderazgo, Puntos Palanca / Impacto y generación de Cuartilla Oficial con SLII®.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,0 +1,172 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    background-color: #020617; /* Slate 950 */
+    color: #f8fafc;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #090d16;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Print Optimization: Strict 1-Page Letter Size, Exact Colors & High Fidelity */
+@media print {
+  @page {
+    size: letter portrait;
+    margin: 0;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    box-sizing: border-box !important;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: visible !important;
+  }
+
+  /* Hide app navigation, headers, controls, viewers, modals */
+  nav,
+  header.sticky,
+  .no-print,
+  button,
+  .visor-izquierdo,
+  aside,
+  footer.bg-slate-950,
+  input,
+  .print\:hidden,
+  .toast-alert {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  .cuartilla-container,
+  #cuartilla-oficial,
+  #cuartilla-reporte,
+  .cuartilla-print-target {
+    width: 100% !important;
+    max-width: 215.9mm !important;
+    margin: 0 auto !important;
+    padding: 8mm 10mm !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    min-height: unset !important;
+    height: auto !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    overflow: hidden !important;
+  }
+
+  /* Single sheet print mode */
+  body:not(.print-entire-batch) #cuartilla-single-wrapper {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body:not(.print-entire-batch) #cuartilla-paquete-completo {
+    display: none !important;
+  }
+
+  /* Entire batch print mode */
+  body.print-entire-batch #cuartilla-single-wrapper {
+    display: none !important;
+  }
+
+  body.print-entire-batch #cuartilla-paquete-completo {
+    display: block !important;
+    width: 100% !important;
+  }
+
+  .cuartilla-paquete-item {
+    page-break-after: always !important;
+    break-after: page !important;
+    display: block !important;
+    margin-bottom: 0 !important;
+    width: 100% !important;
+  }
+
+  .cuartilla-paquete-item:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
+  }
+
+  /* Scale radar chart in print to ensure complete 1-page fit */
+  .radar-chart-print-container svg,
+  svg[aria-label="Gráfica de araña de la Rueda del Liderazgo"] {
+    max-height: 230px !important;
+    max-width: 230px !important;
+    width: auto !important;
+    height: auto !important;
+    display: block !important;
+    margin: 0 auto !important;
+  }
+
+  section, header, footer, table, tr, .avoid-page-break {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  table {
+    page-break-inside: avoid !important;
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  th {
+    background-color: #0f172a !important;
+    color: #ffffff !important;
+  }
+
+  .box-fortalezas, div[class*="bg-blue-50"] {
+    background-color: #eff6ff !important;
+    border-color: #bfdbfe !important;
+  }
+
+  .box-oportunidades, div[class*="bg-rose-50"] {
+    background-color: #fff1f2 !important;
+    border-color: #fecdd3 !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  [contenteditable],
+  [contenteditable="true"] {
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    background-color: transparent !important;
+  }
+}
