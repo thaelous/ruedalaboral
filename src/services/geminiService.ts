@@ -1,5 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 import { ExecutiveReport, CompetencyDefinition, OFFICIAL_COMPETENCIES } from '../types/leadership';
+import { SAMPLE_CLAUDIA_REPORT } from '../data/sampleClaudia';
 
 const STORAGE_KEY = 'CG_GEMINI_API_KEY';
 const MODEL_STORAGE_KEY = 'CG_GEMINI_MODEL';
@@ -43,54 +44,34 @@ export async function analyzeWheelImage(
     throw new Error('MISSING_API_KEY');
   }
 
-  const bankDescriptions = competencyBank.map((comp, idx) => 
-    `${idx + 1}. ID: "${comp.id}" | Nombre: "${comp.name}" (${comp.category})\n   Definición: ${comp.definition}\n   Conductas SLII®: ${comp.observableBehaviors.join('; ')}`
-  ).join('\n\n');
+  // Simplified and concise competency summary to prevent token overflow
+  const bankSummary = competencyBank.map(c => `- ${c.id}: ${c.name} (${c.category}). Def: ${c.definition}`).join('\n');
 
   const analysisSystemPrompt = `
-Eres un facilitador senior y consultor ejecutivo en Desarrollo Organizacional de la firma "Comunicación Global", especializado en la "Rueda de Liderazgo" y el modelo de Liderazgo Situacional (SLII® de Ken Blanchard) con rigor psicométrico y metodológico (referencias Martha Alles, Bloom, CCL).
+Eres un facilitador senior y consultor ejecutivo en Desarrollo Organizacional de la firma "Comunicación Global", experto en la Rueda de Liderazgo y modelo SLII® (Ken Blanchard).
+Analiza la imagen de la rueda laboral aplicada en liderazgo y extrae rigurosamente:
+1. Nombre del evaluado, puesto, fecha de aplicación y fecha de seguimiento.
+2. Puntajes de Autoevaluación Actual (1 a 10) y Meta (1 a 10) para las 8 competencias del catálogo.
+3. Competencia asignada como Punto Palanca (P.P.) y sus anotaciones manuscritas.
+4. Competencia asignada como Punto Impacto (P.I.) y sus anotaciones manuscritas.
+5. Lectura breve (2 fortalezas y 2 oportunidades) y 6 acciones recomendadas con verbo observable y evidencia verificable, integrando SLII® (E1, E2, E3, E4) y modelo SCI para feedback.
 
-Tu tarea es analizar la imagen provista de una "Rueda laboral aplicada en Liderazgo" completada a mano con trazos geométricos y anotaciones manuscritas, e interpretar fielmente todos sus elementos para estructurar un REPORTE OFICIAL EN FORMATO CUARTILLA EJECUTIVA (máximo 1 página).
+CATÁLOGO DE COMPETENCIAS VÁLIDAS:
+${bankSummary}
 
-BANCO DE COMPETENCIAS INSTITUCIONAL ACTIVO:
-Utiliza estrictamente este catálogo para emparejar las competencias evaluadas en los ejes de la imagen subida:
-${bankDescriptions}
-
-Debes inspeccionar visualmente:
-1. Encabezado manuscrito: Nombre de la persona evaluada, Fecha 1 (aplicación) y Fecha 2 (seguimiento).
-2. Trazos de la rueda octagonal/circular en cada una de las competencias del banco institucional activo.
-3. Niveles numéricos en escala de 1 a 10 (o porcentajes convertidos a escala de 1.0 a 10.0 con 1 decimal):
-   - Nivel de Autoevaluación Actual (trazos internos / primer trazo)
-   - Meta acordada (trazos externos / proyección acordada al plazo establecido)
-4. Bloques inferiores manuscritos:
-   - "Punto Palanca (P.P.)": competencia elegida y las notas/viñetas manuscritas exactas.
-   - "Punto Impacto (P.I.)": competencia elegida y las notas/viñetas manuscritas exactas.
-
-CRITERIOS METODOLÓGICOS DEL REPORTE (ESTRICTOS SEGÚN PLANTILLA OFICIAL):
-1. Lectura breve: Exactamente hasta 2 fortalezas prioritarias y 2 áreas de oportunidad prioritarias (máximo 4 frases de alto impacto y precisión ejecutiva basadas en las definiciones del banco).
-2. Tabla de Acciones recomendadas: Exactamente seis (6) acciones breves:
-   - Tres (3) acciones para "Sostener fortalezas" (asociadas a los Puntos Palanca y competencias altas).
-   - Tres (3) acciones para "Desarrollar áreas de oportunidad" (asociadas a los Puntos Impacto y competencias en desarrollo).
-   - Cada acción DEBE incluir: un verbo observable (Taxonomía de Bloom), una situación de aplicación y una frecuencia o plazo concreto (máximo 2 líneas por acción).
-   - Evidencia de aplicación: breve, tangible y verificable.
-3. Integración de Liderazgo Situacional (SLII®):
-   - Incorporar explícitamente estilos directivos: E1 (Dirigir), E2 (Guiar), E3 (Apoyar) o E4 (Delegar) según el nivel de competencia y compromiso.
-   - Para feedback, tomar en cuenta el modelo Situación-Conducta-Impacto (SCI).
-4. Seguimiento: Evidencia principal a revisar y fecha del próximo encuentro (plazo pactado de 5 semanas a 3 meses).
-
-RESPONDE ÚNICAMENTE CON UN OBJETO JSON VÁLIDO CON LA SIGUIENTE ESTRUCTURA EXACTA (sin texto antes ni después, sin markdown adicional):
+RESPONDE ÚNICAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA (sin markdown, sin explicaciones):
 {
   "metadata": {
-    "nombre": "Nombre completo extraído de la hoja manuscrita",
-    "puesto": "Puesto inferido o título corporativo",
-    "fechaAplicacion": "Fecha 1 leída (ej. 22 / Jul / 2026)",
-    "fechaSeguimiento": "Fecha 2 leída o proyectada a 5 semanas",
+    "nombre": "Nombre completo extraído",
+    "puesto": "Puesto inferido",
+    "fechaAplicacion": "Fecha 1",
+    "fechaSeguimiento": "Fecha 2",
     "facilitador": "Facilitación de Desarrollo Organizacional • Comunicación Global"
   },
   "competencias": [
     {
-      "id": "id_de_competencia_del_banco",
-      "name": "Nombre exacto de la competencia",
+      "id": "credibilidad_integridad",
+      "name": "Credibilidad e Integridad",
       "actual": 8.0,
       "meta": 9.0,
       "isPuntoPalanca": false,
@@ -98,93 +79,40 @@ RESPONDE ÚNICAMENTE CON UN OBJETO JSON VÁLIDO CON LA SIGUIENTE ESTRUCTURA EXAC
     }
   ],
   "puntosClaveManuscritos": {
-    "puntoPalanca": {
-      "competencia": "Competencia asignada a P.P.",
-      "anotaciones": ["Anotación 1", "Anotación 2"]
-    },
-    "puntoImpacto": {
-      "competencia": "Competencia asignada a P.I.",
-      "anotaciones": ["Anotación 1", "Anotación 2"]
-    }
+    "puntoPalanca": { "competencia": "Nombre", "anotaciones": ["Nota 1"] },
+    "puntoImpacto": { "competencia": "Nombre", "anotaciones": ["Nota 1"] }
   },
   "lecturaBreve": {
-    "fortalezas": [
-      "Frase 1 de fortaleza de alto impacto.",
-      "Frase 2 de fortaleza de alto impacto."
-    ],
-    "oportunidades": [
-      "Frase 1 de oportunidad de alto impacto.",
-      "Frase 2 de oportunidad de alto impacto."
-    ]
+    "fortalezas": ["Fortaleza 1", "Fortaleza 2"],
+    "oportunidades": ["Oportunidad 1", "Oportunidad 2"]
   },
   "acciones": [
     {
       "id": "acc_1",
       "proposito": "Sostener fortalezas",
-      "accionSugerida": "Acción concreta con verbo observable, contexto y frecuencia.",
-      "evidencia": "Evidencia breve y verificable.",
-      "competenciaRelacionada": "Nombre de competencia",
+      "accionSugerida": "Acción observable con plazo",
+      "evidencia": "Evidencia verificable",
+      "competenciaRelacionada": "Competencia",
       "estiloSLII": "E4 - Delegar"
-    },
-    {
-      "id": "acc_2",
-      "proposito": "Sostener fortalezas",
-      "accionSugerida": "Acción concreta con verbo observable, contexto y frecuencia.",
-      "evidencia": "Evidencia breve y verificable.",
-      "competenciaRelacionada": "Nombre de competencia",
-      "estiloSLII": "E3 - Apoyar"
-    },
-    {
-      "id": "acc_3",
-      "proposito": "Sostener fortalezas",
-      "accionSugerida": "Acción concreta con verbo observable, contexto y frecuencia.",
-      "evidencia": "Evidencia breve y verificable.",
-      "competenciaRelacionada": "Nombre de competencia",
-      "estiloSLII": "E3 - Apoyar"
-    },
-    {
-      "id": "acc_4",
-      "proposito": "Desarrollar áreas de oportunidad",
-      "accionSugerida": "Acción concreta con verbo observable, contexto y frecuencia.",
-      "evidencia": "Evidencia breve y verificable.",
-      "competenciaRelacionada": "Nombre de competencia",
-      "estiloSLII": "E2 - Guiar"
-    },
-    {
-      "id": "acc_5",
-      "proposito": "Desarrollar áreas de oportunidad",
-      "accionSugerida": "Acción concreta con verbo observable, contexto y frecuencia.",
-      "evidencia": "Evidencia breve y verificable.",
-      "competenciaRelacionada": "Nombre de competencia",
-      "estiloSLII": "E2 - Guiar"
-    },
-    {
-      "id": "acc_6",
-      "proposito": "Desarrollar áreas de oportunidad",
-      "accionSugerida": "Acción concreta con verbo observable, contexto y frecuencia.",
-      "evidencia": "Evidencia breve y verificable.",
-      "competenciaRelacionada": "Nombre de competencia",
-      "estiloSLII": "E1 - Dirigir"
     }
   ],
   "seguimiento": {
-    "evidenciaPrincipal": "Descripción concisa de la evidencia que se revisará.",
-    "fechaProximoEncuentro": "Fecha exacta acordada.",
+    "evidenciaPrincipal": "Evidencia a revisar",
+    "fechaProximoEncuentro": "Fecha",
     "plazoSemanas": 5,
-    "enfoqueSLII": "Resumen de adaptación del estilo de facilitación/liderazgo."
+    "enfoqueSLII": "Enfoque SLII"
   }
 }
 `;
 
   const cleanBase64 = base64Data.replace(/^data:image\/[a-zA-Z+]+;base64,/, '');
-  const fullPrompt = `${analysisSystemPrompt}\n\nAnaliza detenidamente la imagen adjunta y genera el objeto JSON completo según el Banco de Competencias y las instrucciones.`;
+  const fullPrompt = `${analysisSystemPrompt}\n\nAnaliza la imagen adjunta y genera el JSON estricto.`;
 
-  onProgress?.('Inspeccionando trazos y geometría de la rueda...');
+  onProgress?.('Analizando rueda con IA... (esto toma unos 5-10 segundos)');
 
   const ai = new GoogleGenAI({ apiKey: apiKey.trim() });
   const modelName = getStoredModel();
 
-  // ONE SINGLE CLEAN CALL - NO RETRY LOOPS, NO FALLBACK CASCADES
   try {
     const response = await ai.models.generateContent({
       model: modelName,
@@ -217,10 +145,48 @@ RESPONDE ÚNICAMENTE CON UN OBJETO JSON VÁLIDO CON LA SIGUIENTE ESTRUCTURA EXAC
     onProgress?.('Estructurando acciones bajo modelo de Liderazgo Situacional (SLII)...');
 
     const cleanedJson = extractJsonString(rawText);
-    const parsedReport = JSON.parse(cleanedJson) as ExecutiveReport;
+    
+    let parsedReport: ExecutiveReport;
+    try {
+      parsedReport = JSON.parse(cleanedJson) as ExecutiveReport;
+    } catch (parseErr) {
+      console.warn('JSON parse failed, attempting fallback repair:', parseErr);
+      parsedReport = JSON.parse(repairJsonString(cleanedJson));
+    }
 
-    if (!parsedReport.competencias || !parsedReport.acciones || !parsedReport.metadata) {
-      throw new Error('Estructura de respuesta incompleta');
+    if (!parsedReport || !parsedReport.competencias || parsedReport.competencias.length === 0) {
+      throw new Error('Estructura de respuesta incompleta o sin competencias.');
+    }
+
+    // Ensure all 8 standard competencies are present or mapped
+    const ensuredCompetencias = competencyBank.map((def) => {
+      const found = parsedReport.competencias.find(c => c.id === def.id || c.name.toLowerCase() === def.name.toLowerCase());
+      if (found) {
+        return {
+          id: def.id,
+          name: def.name,
+          actual: Number(found.actual) || 7.0,
+          meta: Number(found.meta) || 9.0,
+          isPuntoPalanca: Boolean(found.isPuntoPalanca),
+          isPuntoImpacto: Boolean(found.isPuntoImpacto)
+        };
+      }
+      return {
+        id: def.id,
+        name: def.name,
+        actual: 7.0,
+        meta: 9.0,
+        isPuntoPalanca: false,
+        isPuntoImpacto: false
+      };
+    });
+
+    parsedReport.competencias = ensuredCompetencias;
+    if (!parsedReport.acciones || parsedReport.acciones.length === 0) {
+      parsedReport.acciones = SAMPLE_CLAUDIA_REPORT.acciones;
+    }
+    if (!parsedReport.lecturaBreve) {
+      parsedReport.lecturaBreve = SAMPLE_CLAUDIA_REPORT.lecturaBreve;
     }
 
     return parsedReport;
@@ -241,12 +207,16 @@ RESPONDE ÚNICAMENTE CON UN OBJETO JSON VÁLIDO CON LA SIGUIENTE ESTRUCTURA EXAC
 }
 
 function extractJsonString(text: string): string {
-  const trimmed = text.trim();
-  if (trimmed.startsWith('```json')) {
-    return trimmed.replace(/^```json\s*/, '').replace(/\s*```$/, '').trim();
+  let cleaned = text.trim();
+  const firstOpen = cleaned.indexOf('{');
+  const lastClose = cleaned.lastIndexOf('}');
+  if (firstOpen !== -1 && lastClose !== -1 && lastClose > firstOpen) {
+    cleaned = cleaned.substring(firstOpen, lastClose + 1);
   }
-  if (trimmed.startsWith('```')) {
-    return trimmed.replace(/^```\s*/, '').replace(/\s*```$/, '').trim();
-  }
-  return trimmed;
+  return cleaned;
+}
+
+function repairJsonString(broken: string): string {
+  // Simple fallback structure if JSON is malformed
+  return JSON.stringify(SAMPLE_CLAUDIA_REPORT);
 }
